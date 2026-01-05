@@ -1,26 +1,27 @@
 # Core dependencies
-streamlit>=1.28.0
+streamlit
+opencv-python
 opencv-python-headless
-numpy>=1.24.0
-scipy>=1.11.0
+numpy
+scipy
 
 # Machine Learning
-scikit-learn>=1.3.0
-xgboost>=2.0.0
-ultralytics>=8.0.0
-torch>=2.0.0
-torchvision>=0.15.0
+scikit-learn
+xgboost
+ultralytics
+torch
+torchvision
 
 # Visualization
-matplotlib>=3.7.0
-plotly>=5.17.0
-Pillow>=10.0.0
-pandas>=2.0.0
+matplotlib
+plotly
+Pillow
+pandas
 
 # AI/ML Utilities
-google-generativeai>=0.3.0
-tqdm>=4.66.0
+google-generativeai
+tqdm
 
 # Utilities
-requests>=2.31.0
-PyYAML>=6.0
+requests
+PyYAML
