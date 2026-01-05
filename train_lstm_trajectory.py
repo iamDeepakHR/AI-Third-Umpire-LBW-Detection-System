@@ -26,7 +26,7 @@ from lbw_ai.trajectory import LSTMTrajectoryPredictor
 
 Point = Tuple[int, int]
 
-
+dir=r"C:\Users\deepa\Downloads\LBW\data\images\val"
 class TrajectoryDataset(Dataset):
     """Dataset for trajectory sequences."""
     

@@ -13,6 +13,7 @@ An advanced AI-powered third umpire system for cricket that uses computer vision
 - [Quick Start](#-quick-start)
 - [Usage](#-usage)
 - [Training LSTM Model](#-training-lstm-model)
+- [Evaluation Metrics](#-evaluation-metrics)
 - [Understanding Model Files](#-understanding-model-files)
 - [Project Structure](#-project-structure)
 - [How It Works](#-how-it-works)
@@ -230,6 +231,53 @@ python train_lstm_trajectory.py --data-file trajectories.json --epochs 100
 ]
 ```
 
+## 📊 Evaluation Metrics
+
+For IEEE-ready evaluation, use `evaluate_classifier.py` to compute all standard classification metrics and generate high-resolution figures.
+
+### Step 1: Create Evaluation Dataset
+
+Prepare a CSV file containing the ground-truth LBW decisions and the model's predictions (see `sample_lbw_results.csv` for a ready-to-use example):
+
+```csv
+actual,predicted
+OUT,OUT
+NOT OUT,NOT OUT
+OUT,NOT OUT
+...
+```
+
+You can export these labels from match annotations, integration tests, or logged review history. Values must be `OUT` or `NOT OUT`.
+
+### Step 2: Run the Evaluation Script
+
+```bash
+python evaluate_classifier.py --data-file my_lbw_results.csv --output-dir outputs/evaluation
+```
+
+The script prints the metrics to the terminal and generates:
+
+- `outputs/evaluation/metrics_summary.json` – ready to cite in your paper or supplemental material
+- `outputs/evaluation/confusion_matrix.png` – high-resolution 300 dpi figure for IEEE manuscripts or presentations
+
+### Metrics Reported
+
+| Metric | Description |
+|--------|-------------|
+| **True Positive (TP)** | Actual OUT correctly predicted as OUT |
+| **True Negative (TN)** | Actual NOT OUT correctly predicted as NOT OUT |
+| **False Positive (FP)** | Actual NOT OUT incorrectly predicted as OUT |
+| **False Negative (FN)** | Actual OUT incorrectly predicted as NOT OUT |
+| **Accuracy** | `(TP + TN) / (TP + TN + FP + FN)` |
+| **Precision** | `TP / (TP + FP)` |
+| **Recall / Sensitivity** | `TP / (TP + FN)` |
+| **Specificity** | `TN / (TN + FP)` |
+| **F1-Score** | `2 * (Precision * Recall) / (Precision + Recall)` |
+| **False Positive Rate (FPR)** | `FP / (FP + TN)` |
+| **False Negative Rate (FNR)** | `FN / (FN + TP)` |
+
+Include the exported JSON table and the generated confusion-matrix image in your IEEE research paper to document classifier performance comprehensively.
+
 ## 📊 Understanding Model Files
 
 ### ⚠️ Important: Model Files Are Optional!
@@ -297,6 +345,7 @@ Third_Umpire_LBW_Detection_Using_AI/
 ├── requirements.txt                # Python dependencies
 ├── test_integration.py             # Integration tests
 ├── train_lstm_trajectory.py        # LSTM model training script
+├── evaluate_classifier.py          # Classification metrics & plots
 ├── extract_trajectories_from_videos.py  # Extract trajectories from videos
 ├── yolov8n.pt                      # YOLOv8 model weights
 ├── README.md                       # This file
