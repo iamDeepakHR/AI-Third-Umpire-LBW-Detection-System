@@ -370,7 +370,7 @@ def main():
             </style>
         """, unsafe_allow_html=True)
         st.header("🤖 AI Settings")
-        gemini_api_key = "AIzaSyAU9WBV5MvyTs5fKTmsRwhQlIvGHWclj6c"
+        gemini_api_key = "AIzaSyBJZzHfUbvPJvy8janmlTXhnMybmCeXDg4"
         commentary_tone = st.selectbox("Commentary Tone", ["Analyst", "Commentator"], index=0)
         
         st.markdown("---")
@@ -396,7 +396,7 @@ def main():
             demo_videos = [f for f in os.listdir(samples_dir) if f.endswith('.mp4')]
         demo_choice = st.selectbox("Or pick a demo video from samples folder", options=["(none)"] + demo_videos)
 
-        run_btn = st.button("🚀 Run LBW Analysis", use_container_width=True)
+        run_btn = st.button("🚀 Run LBW Analysis", width='stretch')
 
         # Check if we should use existing results
         use_existing = st.session_state.analysis_results is not None and not run_btn
@@ -600,7 +600,7 @@ def main():
                     decision,
                     smooth_curve=True
                 )
-                st.image(cv2.cvtColor(vis_frame, cv2.COLOR_BGR2RGB), use_column_width=True)
+                st.image(cv2.cvtColor(vis_frame, cv2.COLOR_BGR2RGB), width='stretch')
 
         with col2:
             st.subheader("📈 Trajectory Analysis")
@@ -615,7 +615,7 @@ def main():
                 decision=decision,
                 confidence=prob
             )
-            st.plotly_chart(fig_3d, use_container_width=True)
+            st.plotly_chart(fig_3d, width='stretch')
 
         # Additional visualizations
         st.subheader("🔍 Detailed Analysis")
@@ -633,7 +633,7 @@ def main():
                 frame_height=h,
                 frame_width=w,
             )
-            st.image(trajectory_img, caption="Complete Ball Trajectory Analysis", use_column_width=True)
+            st.image(trajectory_img, caption="Complete Ball Trajectory Analysis", width='stretch')
         
         with col2:
             # Comparison plot
@@ -644,7 +644,7 @@ def main():
                 frame_width=w,
                 decision=decision
             )
-            st.plotly_chart(fig_comp, use_container_width=True)
+            st.plotly_chart(fig_comp, width='stretch')
 
         # Export & Report section
         st.subheader("💾 Export & Reports")
@@ -877,7 +877,7 @@ def main():
                     yaxis_title="Count",
                     template='plotly_dark'
                 )
-                st.plotly_chart(fig_decision, use_container_width=True)
+                st.plotly_chart(fig_decision, width='stretch')
             
             with col2:
                 # Confidence distribution
@@ -897,7 +897,7 @@ def main():
                         yaxis_title="Frequency",
                         template='plotly_dark'
                     )
-                    st.plotly_chart(fig_conf, use_container_width=True)
+                    st.plotly_chart(fig_conf, width='stretch')
             
             # Recent reviews table
             st.subheader("Recent Reviews")
@@ -910,7 +910,7 @@ def main():
                     'Would Hit Stumps': 'Yes' if r.would_hit_stumps else 'No',
                     'Timestamp': r.timestamp
                 } for r in reversed(recent)])
-                st.dataframe(df, use_container_width=True, hide_index=True)
+                st.dataframe(df, width='stretch', hide_index=True)
 
     with tab3:
         st.header("📚 Review History")

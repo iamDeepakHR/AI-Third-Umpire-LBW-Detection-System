@@ -208,8 +208,9 @@ def create_complete_trajectory_image(track: List[Point], predicted: List[Point],
     
     # Convert matplotlib figure to numpy array
     fig.canvas.draw()
-    buf = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
-    buf = buf.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+    buf = np.frombuffer(fig.canvas.buffer_rgba(), dtype=np.uint8)
+    buf = buf.reshape(fig.canvas.get_width_height()[::-1] + (4,))
+    buf = buf[:, :, :3]  # Remove alpha channel to get RGB
     
     plt.close(fig)
     return buf
