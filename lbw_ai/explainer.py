@@ -61,7 +61,7 @@ def generate_explanation(
     # --- AI-based detailed explanation (optional) ---
     if use_ai and api_key:
         try:
-            genai.configure(api_key=api_key)
+            genai.configure(api_key="AIzaSyBvZi3U5THV3B89znexdK5NAo1EItyfCIU")
             model = genai.GenerativeModel("gemini-2.5-flash")
 
             # Tone-specific prompts
