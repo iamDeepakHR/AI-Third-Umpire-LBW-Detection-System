@@ -370,7 +370,7 @@ def main():
             </style>
         """, unsafe_allow_html=True)
         st.header("🤖 AI Settings")
-        gemini_api_key = "AIzaSyBJZzHfUbvPJvy8janmlTXhnMybmCeXDg4"
+        gemini_api_key = "AIzaSyDHfSK0aVDWMs8fToUEiyWjh-ExvsQaO8I"
         commentary_tone = st.selectbox("Commentary Tone", ["Analyst", "Commentator"], index=0)
         
         st.markdown("---")
