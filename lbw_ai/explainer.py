@@ -1,10 +1,13 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Optional
-import google.generativeai as genai
+from typing import Optional, List
+import requests
 import os
 
 
+# =========================
+# 📊 INPUT STRUCTURE
+# =========================
 @dataclass
 class ExplanationInputs:
     pitched_zone: str
@@ -12,96 +15,116 @@ class ExplanationInputs:
     would_hit_stumps: bool
     decision: str
     model_confidence: float
-    track_points: Optional[list] = None
-    future_points: Optional[list] = None
+    track_points: Optional[List] = None
+    future_points: Optional[List] = None
     bounce_index: Optional[int] = None
     distance_to_stumps_px: Optional[float] = None
 
 
+# =========================
+# 🔑 OPENROUTER CONFIG
+# =========================
+OPENROUTER_API_KEY = "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"
+
+URL = "https://openrouter.ai/api/v1/chat/completions"
+
+HEADERS = {
+    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+    "Content-Type": "application/json",
+    "HTTP-Referer": "https://ai-third-umpire-lbw-detection-system-5bbb7uthfyjfhbkknfncop.streamlit.app/",  # 🔁 change after deploy
+    "X-Title": "AI Third Umpire LBW"
+}
+
+
+# =========================
+# 🧠 MAIN FUNCTION
+# =========================
 def generate_explanation(
     inputs: ExplanationInputs,
     use_ai: bool = False,
-    provider: str | None = None,
-    api_key: str | None = None,
-    simple: bool = True,  # 👈 New feature: generate easy explanation for audience
-    tone: str = "analyst",  # 👈 New: "analyst" or "commentator"
-) -> str:
-    # --- Base Technical Summary ---
+    simple: bool = True,
+    tone: str = "analyst",
+):
+    """
+    Generate LBW explanation:
+    - Rule-based (simple)
+    - OpenRouter AI (DeepSeek)
+    """
+
+    # -------------------------
+    # 📌 BASE SUMMARY
+    # -------------------------
     base = (
         f"Ball pitched: {inputs.pitched_zone}. "
         f"Impact in line: {'Yes' if inputs.impact_in_line else 'No'}. "
-        f"Projected to hit stumps: {'Yes' if inputs.would_hit_stumps else 'No'}. "
-        f"Decision: {inputs.decision} (confidence {inputs.model_confidence:.2f})."
+        f"Would hit stumps: {'Yes' if inputs.would_hit_stumps else 'No'}. "
+        f"Decision: {inputs.decision} "
+        f"(Confidence: {inputs.model_confidence:.2f})"
     )
 
-    # --- Simple explanation for normal users ---
-    if simple:
+    # -------------------------
+    # 📘 SIMPLE RULE-BASED
+    # -------------------------
+    if simple or not use_ai:
         if inputs.impact_in_line and inputs.would_hit_stumps:
-            user_expl = (
-                "The ball landed in a fair area and hit the batter’s leg in front of the stumps. "
-                "The system predicts the ball would have gone on to hit the stumps. "
-                f"So, the decision is **{inputs.decision.upper()}**."
-            )
+            msg = "The ball hit in line and would go on to hit the stumps. So it's OUT."
         elif not inputs.impact_in_line:
-            user_expl = (
-                "The ball hit the batter outside the line of the stumps. "
-                "That means it’s less likely to hit the stumps, so it’s **NOT OUT**."
-            )
+            msg = "The ball hit outside the line of the stumps. So it's NOT OUT."
         else:
-            user_expl = (
-                "The ball didn’t seem likely to hit the stumps after bouncing. "
-                "Hence, it’s **NOT OUT**."
-            )
+            msg = "The ball would miss the stumps. So it's NOT OUT."
 
-        user_expl += f" (Confidence: {inputs.model_confidence:.0%})"
-        simple_summary = f"{base}\n\n📘 Simple Explanation:\n{user_expl}"
-    else:
-        simple_summary = base
+        return f"{base}\n\n📘 Simple Explanation:\n{msg} ({inputs.model_confidence:.0%})"
 
-    # --- AI-based detailed explanation (optional) ---
-    if use_ai and api_key:
-        try:
-            genai.configure(api_key="AIzaSyBvZi3U5THV3B89znexdK5NAo1EItyfCIU")
-            model = genai.GenerativeModel("gemini-2.5-flash")
+    # -------------------------
+    # 🤖 AI EXPLANATION (OpenRouter)
+    # -------------------------
+    if not OPENROUTER_API_KEY:
+        return base + "\n\n[Error: OPENROUTER_API_KEY not set]"
 
-            # Tone-specific prompts
-            if tone.lower() == "commentator":
-                role_prompt = """You are a charismatic cricket commentator with an engaging, natural speaking style. 
-                Make your explanation exciting and accessible, like you're narrating live on TV. 
-                Use phrases like "What a delivery!", "The ball has done enough", "That's hitting the stumps!", etc."""
-            else:  # analyst mode (default)
-                role_prompt = """You are a professional cricket third umpire and technical analyst. 
-                Provide a detailed, technical explanation with precise terminology and data-driven insights."""
+    try:
+        # Tone selection
+        if tone.lower() == "commentator":
+            system_role = "You are a cricket commentator explaining LBW like live TV."
+        else:
+            system_role = "You are a professional cricket analyst explaining LBW decisions."
 
-            prompt = f"""
-            {role_prompt}
-            
-            Give a clear, structured explanation of the following LBW decision.
+        prompt = f"""
+Explain the LBW decision clearly.
 
-            Ball Details:
-            - Pitched in: {inputs.pitched_zone}
-            - Impact in line: {'Yes' if inputs.impact_in_line else 'No'}
-            - Would hit stumps: {'Yes' if inputs.would_hit_stumps else 'No'}
-            - Confidence: {inputs.model_confidence:.2f}
-            - Distance to stumps: {inputs.distance_to_stumps_px or 'N/A'}
+Details:
+- Pitch zone: {inputs.pitched_zone}
+- Impact in line: {inputs.impact_in_line}
+- Would hit stumps: {inputs.would_hit_stumps}
+- Confidence: {inputs.model_confidence}
+- Distance to stumps: {inputs.distance_to_stumps_px}
 
-            Technical Info:
-            - Track points: {len(inputs.track_points) if inputs.track_points else 'N/A'}
-            - Bounce frame: {inputs.bounce_index or 'N/A'}
-            - Predicted future positions: {len(inputs.future_points) if inputs.future_points else 'N/A'}
+Trajectory:
+- Track points: {len(inputs.track_points) if inputs.track_points else 'N/A'}
+- Bounce index: {inputs.bounce_index}
 
-            Decision: {inputs.decision}
+Final Decision: {inputs.decision}
 
-            Please provide:
-            1. A {tone}-style explanation of the decision
-            2. Key technical points that led to this decision
-            3. A clear conclusion about why it's OUT or NOT OUT
-            """
+Give:
+1. Clear explanation
+2. Key reasoning
+3. Final conclusion
+"""
 
-            response = model.generate_content(prompt)
-            return response.text
+        payload = {
+            "model": "deepseek/deepseek-chat",
+            "messages": [
+                {"role": "system", "content": system_role},
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.7
+        }
 
-        except Exception as e:
-            return f"{simple_summary}\n\n[AI Explanation Error: {str(e)}]"
+        response = requests.post(URL, headers=HEADERS, json=payload, timeout=30)
 
-    return simple_summary
+        if response.status_code == 200:
+            return response.json()["choices"][0]["message"]["content"]
+        else:
+            return base + f"\n\n[API Error: {response.text}]"
+
+    except Exception as e:
+        return base + f"\n\n[Error: {str(e)}]"
