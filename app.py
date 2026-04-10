@@ -370,9 +370,15 @@ def main():
             </style>
         """, unsafe_allow_html=True)
         st.header("🤖 AI Settings")
-        gemini_api_key = "AIzaSyBvZi3U5THV3B89znexdK5NAo1EItyfCIU"
-        commentary_tone = st.selectbox("Commentary Tone", ["Analyst", "Commentator"], index=0)
-        
+
+        use_ai = st.toggle("Enable AI Explanation (OpenRouter)", value=True)
+
+        commentary_tone = st.selectbox(
+    "Commentary Tone",
+    ["Analyst", "Commentator"],
+    index=0
+            )
+        st.warning("⚠️ Set OPENROUTER_API_KEY in environment")
         st.markdown("---")
         st.header("📊 Analytics")
         stats = st.session_state.analytics.get_statistics()
@@ -753,22 +759,21 @@ def main():
         
         # AI-based detailed explanation
         explanation_ai = generate_explanation(
-            ExplanationInputs(
-                pitched_zone=pitched_zone,
-                impact_in_line=impact_in_line,
-                would_hit_stumps=would_hit_stumps,
-                decision=decision,
-                model_confidence=prob,
-                track_points=track_points,
-                future_points=future_points,
-                bounce_index=bounce_index,
-                distance_to_stumps_px=distance_to_stumps_px,
-            ),
-            use_ai=True,
-            api_key=gemini_api_key if gemini_api_key else None,
-            simple=False,
-            tone=explanation_tone,
-        )
+        ExplanationInputs(
+        pitched_zone=pitched_zone,
+        impact_in_line=impact_in_line,
+        would_hit_stumps=would_hit_stumps,
+        decision=decision,
+        model_confidence=prob,
+        track_points=track_points,
+        future_points=future_points,
+        bounce_index=bounce_index,
+        distance_to_stumps_px=distance_to_stumps_px,
+    ),
+    use_ai=use_ai,
+    simple=False,
+    tone=explanation_tone,
+    )
 
         # Prominent Technical Report Display
         st.markdown(f"""
@@ -934,4 +939,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
