@@ -3,9 +3,14 @@ from dataclasses import dataclass
 from typing import Optional, List
 import requests
 import os
-from dotenv import load_dotenv
-load_dotenv()
-OPENROUTER_API_KEY = os.getenv("apikey")
+
+# Optional: Only needed if running inside Streamlit
+try:
+    import streamlit as st
+    API_KEY = st.secrets.get("apikey", None)
+except:
+    API_KEY = os.getenv("OPENROUTER_API_KEY")
+
 
 # =========================
 # 📊 INPUT STRUCTURE
@@ -26,13 +31,12 @@ class ExplanationInputs:
 # =========================
 # 🔑 OPENROUTER CONFIG
 # =========================
-
 URL = "https://openrouter.ai/api/v1/chat/completions"
 
 HEADERS = {
-    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+    "Authorization": f"Bearer {API_KEY}",
     "Content-Type": "application/json",
-    "HTTP-Referer": "https://ai-third-umpire-lbw-detection-system-5bbb7uthfyjfhbkknfncop.streamlit.app/",  # 🔁 change after deploy
+    "HTTP-Referer": "https://ai-third-umpire-lbw-detection-system.streamlit.app/",
     "X-Title": "AI Third Umpire LBW"
 }
 
@@ -77,9 +81,9 @@ def generate_explanation(
         return f"{base}\n\n📘 Simple Explanation:\n{msg} ({inputs.model_confidence:.0%})"
 
     # -------------------------
-    # 🤖 AI EXPLANATION (OpenRouter)
+    # ❗ CHECK API KEY
     # -------------------------
-    if not OPENROUTER_API_KEY:
+    if not API_KEY:
         return base + "\n\n[Error: OPENROUTER_API_KEY not set]"
 
     try:
@@ -120,12 +124,17 @@ Give:
             "temperature": 0.7
         }
 
-        response = requests.post(URL, headers=HEADERS, json=payload, timeout=30)
+        response = requests.post(
+            URL,
+            headers=HEADERS,
+            json=payload,
+            timeout=30
+        )
 
         if response.status_code == 200:
             return response.json()["choices"][0]["message"]["content"]
         else:
-            return base + f"\n\n[API Error: {response.text}]"
+            return base + f"\n\n[API Error {response.status_code}: {response.text}]"
 
     except Exception as e:
         return base + f"\n\n[Error: {str(e)}]"
