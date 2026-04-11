@@ -3,7 +3,9 @@ from dataclasses import dataclass
 from typing import Optional, List
 import requests
 import os
-
+from dotenv import load_dotenv
+load_dotenv()
+OPENROUTER_API_KEY = os.getenv("apikey")
 
 # =========================
 # 📊 INPUT STRUCTURE
@@ -24,7 +26,6 @@ class ExplanationInputs:
 # =========================
 # 🔑 OPENROUTER CONFIG
 # =========================
-OPENROUTER_API_KEY = "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"
 
 URL = "https://openrouter.ai/api/v1/chat/completions"
 
