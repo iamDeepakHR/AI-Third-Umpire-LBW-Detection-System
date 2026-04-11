@@ -36,7 +36,7 @@ URL = "https://openrouter.ai/api/v1/chat/completions"
 HEADERS = {
     "Authorization": f"Bearer {API_KEY}",
     "Content-Type": "application/json",
-    "HTTP-Referer": "https://ai-third-umpire-lbw-detection-system.streamlit.app/",
+    "HTTP-Referer": "https://ai-third-umpire-lbw-detection-system-5bbb7uthfyjfhbkknfncop.streamlit.app/",
     "X-Title": "AI Third Umpire LBW"
 }
 
